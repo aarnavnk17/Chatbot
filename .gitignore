@@ -1,14 +1,33 @@
-# Ignore virtual environment directory
-venv/
-
-# Ignore .env files
-.env
-
-# Ignore other common files and directories
-node_modules/
-package-lock.json
-.pycache/
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
 
-# Ignore IDE-specific files
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# IDE
 .vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# ChromaDB
+db/
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs
+*.log
