@@ -9,7 +9,7 @@ import uuid
 from sentence_transformers import SentenceTransformer
 
 # Used to read PDF files
-from pypdf import PdfReader
+from PyPDF2 import PdfReader
 
 # ChromaDB vector database
 import chromadb
