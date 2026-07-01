@@ -9,7 +9,7 @@ A conversational AI application built with **Retrieval-Augmented Generation (RAG
 - **RAG Pipeline**: Combine retrieved context with an LLM for accurate answers
 - **Long-term Memory**: Store and retrieve user information across sessions
 - **Safety Guardrails**: Built-in prompt injection and hallucination prevention
-- **Web UI**: Interactive Streamlit interface for easy interaction
+- **Web UI**: FastAPI-powered browser interface for easy interaction
 - **Terminal CLI**: Command-line interface for programmatic access
 
 ## Architecture
@@ -32,8 +32,8 @@ User Input
 - **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
 - **Language Model**: Ollama (Qwen 2.5 Coder 7B)
 - **PDF Processing**: PyPDF2
-- **Web Framework**: Streamlit
-- **Memory Management**: In-memory storage with ChromaDB persistence
+- **Web Framework**: FastAPI
+- **Memory Management**: MongoDB-backed session storage
 
 ## Prerequisites
 
@@ -82,27 +82,33 @@ Ollama runs the language model locally. Follow these steps:
 
 Edit `config.py` to customize:
 
-- `CHROMA_PATH`: Vector database storage location
+- `CHROMA_PATH`: Vector database storage location for document chunks
 - `COLLECTION_NAME`: ChromaDB collection name
 - Model name in `rag_engine.py` (currently `qwen2.5-coder:7b`)
 - Similarity threshold for RAG vs. general knowledge mode
+- `MONGODB_URI`: MongoDB connection string for session storage
 
 ## Usage
 
 ### Web Interface (Recommended)
 
-Start the Streamlit app:
+Start the FastAPI app:
 ```bash
-streamlit run app.py
+uvicorn server:app --reload
 ```
 
-Then open `http://localhost:8501` in your browser.
+Then open `http://localhost:8000` in your browser.
+
+If you have existing session data in the old Chroma-backed store, migrate it once:
+```bash
+python migrate_sessions.py
+```
 
 **Features**:
-- Upload PDF files via sidebar
+- Upload PDF files from the web UI
 - Ask questions about documents or general topics
 - View answer sources
-- Chat history stored during session
+- Chat history stored in MongoDB
 
 ### Terminal Interface
 
@@ -153,13 +159,14 @@ Bot: "Your name is Alice."
 
 ```
 .
-├── app.py                 # Streamlit web interface
+├── app.py                 # Legacy Streamlit web interface
+├── server.py              # FastAPI web interface
 ├── chatbot.py            # Terminal CLI
 ├── rag_engine.py         # Core RAG pipeline & memory
 ├── ingest.py             # PDF ingestion & indexing
 ├── config.py             # Configuration variables
 ├── requirements.txt      # Python dependencies
-├── db/                   # ChromaDB storage (persistent)
+├── db/                   # ChromaDB storage for document chunks
 ├── data/                 # Uploaded PDFs
 └── README.md
 ```
@@ -185,8 +192,8 @@ Bot: "Your name is Alice."
 
 - Requires local Ollama instance (not cloud-based)
 - Performance depends on model quality and system resources
-- No multi-user session management
-- Chat history stored only in memory (resets on restart)
+- Requires a running MongoDB instance
+- FastAPI web UI is the primary front end
 
 ## Future Enhancements
 

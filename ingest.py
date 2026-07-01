@@ -3,6 +3,7 @@
 # ============================================================
 
 import os
+import hashlib
 import uuid
 
 # Local embedding model used for semantic search
@@ -34,9 +35,8 @@ from config import (
 # Otherwise vector similarity search will not work correctly.
 # ============================================================
 
-embedding_model = SentenceTransformer(
-    "all-MiniLM-L6-v2"
-)
+embedding_model = None
+embedding_model_error = None
 
 
 # ============================================================
@@ -119,10 +119,35 @@ def chunk_text(
 # ============================================================
 
 def get_embedding(text):
+    model = _get_embedding_model()
+    if model is not None:
+        return model.encode(text).tolist()
+    return _fallback_embed(text)
 
-    return embedding_model.encode(
-        text
-    ).tolist()
+
+def _get_embedding_model():
+    global embedding_model, embedding_model_error
+
+    if embedding_model is not None:
+        return embedding_model
+
+    if embedding_model_error is not None:
+        return None
+
+    try:
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        return embedding_model
+    except Exception as exc:
+        embedding_model_error = exc
+        print("Warning: could not load all-MiniLM-L6-v2 locally.")
+        print("Falling back to deterministic hash embeddings for ingestion.")
+        print(f"Details: {exc}")
+        return None
+
+
+def _fallback_embed(text, dimensions=384):
+    digest = hashlib.sha256(text.encode("utf-8")).digest()
+    return [((digest[i % len(digest)] / 255.0) * 2.0) - 1.0 for i in range(dimensions)]
 
 
 # ============================================================
